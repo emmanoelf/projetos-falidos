@@ -108,6 +108,6 @@ def create_db():
 	con.execute("CREATE TABLE user (id INTEGER PRIMARY KEY, name char(40) NOT NULL, email char(30) NOT NULL, user char(10) NOT NULL, password char(32) NOT NULL)")
 	con.execute("CREATE TABLE project (id INTEGER PRIMARY KEY, name char(40) NOT NULL, guilty char(10) NOT NULL, hope boolean NOT NULL)")
 	con.commit()
-	
+
 if __name__ == '__main__':
-	run(host="localhost", port=8080, debug=True, reloader=True)
+	run(host="localhost", port=8080, debug=False, reloader=True)

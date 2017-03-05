@@ -1,4 +1,5 @@
 from bottle import *
+import argparse
 import sqlite3
 import hashlib
 
@@ -115,5 +116,12 @@ def create_db():
 	con.commit()
 
 if __name__ == '__main__':
-	#run(host="localhost", port=8080, debug=True, reloader=True)
-	run(host='0.0.0.0', port='5000')
+	parser = argparse.ArgumentParser()
+	parser.add_argument("--port", type=int,
+		help="specify the port where the app is gonna run.")
+	args = parser.parse_args()
+
+	if args.port:
+		run(host='0.0.0.0', port=args.port)
+	else:
+		run(host='localhost', port=8080, debug=True, reloader=True)

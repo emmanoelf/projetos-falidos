@@ -1,1 +1,1 @@
-web: python falidos.py
+worker: python falidos.py

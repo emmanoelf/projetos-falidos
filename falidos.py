@@ -80,7 +80,7 @@ def user_registration():
 		connection.commit()
 		cursor.close()
 		return template('cadastro_usuario.tpl',
-			message='O projeto {} foi cadastrado com sucesso!'.format(user_name))
+			message='O usuario {} foi cadastrado com sucesso!'.format(user_name))
 	else:
 		return template('cadastro_usuario.tpl', message=None)	
 
@@ -114,6 +114,10 @@ def create_db():
 	con.execute("CREATE TABLE user (id INTEGER PRIMARY KEY, name char(40) NOT NULL, email char(30) NOT NULL, user char(10) NOT NULL, password char(32) NOT NULL)")
 	con.execute("CREATE TABLE project (id INTEGER PRIMARY KEY, name char(40) NOT NULL, guilty char(10) NOT NULL, hope boolean NOT NULL)")
 	con.commit()
+
+@error(404)
+def error_404():
+	return template('erro_404.tpl')
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser()

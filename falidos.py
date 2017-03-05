@@ -17,6 +17,11 @@ def imgs(filename):
 	return static_file(filename, root='./img')
 
 
+@route('/')
+def home_page():
+	return template('home_page.tpl')
+
+
 @route('/login', method=['GET', 'POST'])
 def index():
 

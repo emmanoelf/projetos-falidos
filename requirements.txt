@@ -1,4 +1,4 @@
-python==3.6.0
+python==3.5.2
 behave==1.2.5
 bottle==0.12.13
 selenium==3.0.2

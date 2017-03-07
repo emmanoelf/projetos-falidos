@@ -1,7 +1,13 @@
 from bottle import *
+import datetime
 import argparse
 import sqlite3
 import hashlib
+
+def verify_login():
+	if request.get_cookie('logged') == None:
+		redirect('/authentication_failure')
+
 
 @route('/css/<filename>')
 def stylesheets(filename):
@@ -23,6 +29,11 @@ def home_page():
 	return template('home_page.tpl')
 
 
+@route('/authentication_failure')
+def authentication_failure():
+	return template('aviso_auth.tpl')
+
+
 @route('/login', method=['GET', 'POST'])
 def index():
 
@@ -36,10 +47,13 @@ def index():
 		result = cursor.fetchone()
 		cursor.close()
 
+
 		if result[0] == password.hexdigest():
+			response.set_cookie('logged', 'true', 
+				path='/', max_age=300)
 			redirect('/project_registration')
 		else:
-			return template('index.tpl', message="Usuario ou senha incorretos")
+			return template('index.tpl', message="Usuário ou senha incorretos")
 	else:
 		return template('index.tpl', message=None)
 
@@ -47,6 +61,8 @@ def index():
 @route('/project_registration', method=['GET', 'POST'])
 def project_registration():
 	
+	verify_login()
+
 	if request.params.get('register', ''):
 		project_name = request.params.get('project_name')
 		guilty = request.params.get('guilty')
@@ -66,6 +82,8 @@ def project_registration():
 @route('/user_registration', method=['GET', 'POST'])
 def user_registration():
 	
+	verify_login()
+
 	if request.params.get('register', ''):
 		name = request.params.get('name')
 		email = request.params.get('email')
@@ -80,13 +98,16 @@ def user_registration():
 		connection.commit()
 		cursor.close()
 		return template('cadastro_usuario.tpl',
-			message='O usuario {} foi cadastrado com sucesso!'.format(user_name))
+			message='O usuário {} foi cadastrado com sucesso!'.format(user_name))
 	else:
 		return template('cadastro_usuario.tpl', message=None)	
 
 
 @route('/all_projects', method=['GET', 'POST'])
 def all_projects():
+
+	verify_login()
+
 	connection = sqlite3.connect('falidos.db')
 	cursor = connection.cursor()
 	cursor.execute('SELECT * FROM project')
@@ -99,6 +120,9 @@ def all_projects():
 
 @route('/all_users', method=['GET', 'POST'])
 def all_users():
+
+	verify_login()
+
 	connection = sqlite3.connect('falidos.db')
 	cursor = connection.cursor()
 	cursor.execute('SELECT name, email, user FROM user')

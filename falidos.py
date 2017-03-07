@@ -137,6 +137,7 @@ def create_db():
 	con = sqlite3.connect('falidos.db') # Warning: This file is created in the current directory
 	con.execute("CREATE TABLE user (id INTEGER PRIMARY KEY, name char(40) NOT NULL, email char(30) NOT NULL, user char(10) NOT NULL, password char(32) NOT NULL)")
 	con.execute("CREATE TABLE project (id INTEGER PRIMARY KEY, name char(40) NOT NULL, guilty char(10) NOT NULL, hope boolean NOT NULL)")
+	con.execute('''INSERT INTO user (name, email, user, password) VALUES ('admin', 'admin@admin', 'admin', '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4')''')
 	con.commit()
 
 @error(404)

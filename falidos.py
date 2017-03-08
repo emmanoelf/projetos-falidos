@@ -1,7 +1,6 @@
 from bottle import *
-import datetime
 import argparse
-import sqlite3
+from db_abstraction import worker
 import hashlib
 
 def verify_login():
@@ -41,14 +40,10 @@ def index():
 		email = request.params.get('email', '')
 		password = hashlib.sha256()
 		password.update(request.params.get('password', '').encode())
-		connection = sqlite3.connect('falidos.db')
-		cursor = connection.cursor()
-		cursor.execute('SELECT password FROM user WHERE email = ?', (email,))
-		result = cursor.fetchone()
-		cursor.close()
+		result =worker('falidos.db', 
+			'SELECT password FROM user WHERE email = ?', (email,)).query()
 
-
-		if result[0] == password.hexdigest():
+		if result[0][0] == password.hexdigest():
 			response.set_cookie('logged', 'true', 
 				path='/', max_age=300)
 			redirect('/project_registration')
@@ -67,14 +62,13 @@ def project_registration():
 		project_name = request.params.get('project_name')
 		guilty = request.params.get('guilty')
 		hope = request.params.get('hope')
-		connection = sqlite3.connect('falidos.db')
-		cursor = connection.cursor()
-		cursor.execute('''INSERT INTO project (name, guilty, hope) 
-			VALUES (?,?,?)''', (project_name.encode(), guilty, hope))
-		connection.commit()
-		cursor.close()
+		
+		result = worker('falidos.db', 
+			'INSERT INTO project (name, guilty, hope) VALUES (?,?,?)', 
+			(project_name.encode(), guilty, hope)).insert()
+
 		return template('cadastro_projeto.tpl',
-			message='O projeto {} foi cadastrado com sucesso!'.format(project_name))
+		message='O projeto {} foi cadastrado com sucesso!'.format(project_name))
 	else:
 		return template('cadastro_projeto.tpl', message=None)	
 
@@ -91,13 +85,11 @@ def user_registration():
 		password = hashlib.sha256()
 		password.update(request.params.get('password', '').encode())
 
-		connection = sqlite3.connect('falidos.db')
-		cursor = connection.cursor()
-		cursor.execute('''INSERT INTO user (name, email, user, password) 
-			VALUES (?,?,?,?)''', (name, email, user_name, password.hexdigest()))
-		connection.commit()
-		cursor.close()
-		return template('cadastro_usuario.tpl',
+		result = worker('falidos.db', 
+			'INSERT INTO user (name, email, user, password) VALUES (?,?,?,?)', 
+			(name, email, user_name, password.hexdigest())).insert()
+		
+		return template('cadastro_usuario.tpl',	
 			message='O usuário {} foi cadastrado com sucesso!'.format(user_name))
 	else:
 		return template('cadastro_usuario.tpl', message=None)	
@@ -108,11 +100,7 @@ def all_projects():
 
 	verify_login()
 
-	connection = sqlite3.connect('falidos.db')
-	cursor = connection.cursor()
-	cursor.execute('SELECT * FROM project')
-	result = cursor.fetchall()
-	cursor.close()
+	result = worker('falidos.db','SELECT * FROM project').query()
 
 	return template('todos_projetos.tpl', rows=result)
 
@@ -123,11 +111,8 @@ def all_users():
 
 	verify_login()
 
-	connection = sqlite3.connect('falidos.db')
-	cursor = connection.cursor()
-	cursor.execute('SELECT name, email, user FROM user')
-	result = cursor.fetchall()
-	cursor.close()
+	result = worker('falidos.db', 
+		'SELECT name, email, user FROM user').query()
 	
 	return template('todos_usuarios.tpl', rows=result)
 
@@ -148,6 +133,8 @@ if __name__ == '__main__':
 	parser = argparse.ArgumentParser()
 	parser.add_argument("--port", type=int,
 		help="specify the port where the app is gonna run.")
+	parser.add_argument("--db",
+		help="specify the database to be used.")
 	args = parser.parse_args()
 
 	if args.port:
